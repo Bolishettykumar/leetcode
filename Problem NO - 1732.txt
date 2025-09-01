@@ -1,0 +1,44 @@
+import java.util.PriorityQueue;
+
+class Solution {
+    public double maxAverageRatio(int[][] classes, int extraStudents) {
+        // Max heap based on the marginal gain of adding one extra student
+        PriorityQueue<double[]> maxHeap = new PriorityQueue<>((a, b) -> Double.compare(b[0], a[0]));
+
+        // Compute initial gain for each class
+        for (int[] c : classes) {
+            int pass = c[0], total = c[1];
+            double gain = gain(pass, total);
+            maxHeap.offer(new double[]{gain, pass, total});
+        }
+
+        // Assign each extra student
+        while (extraStudents-- > 0) {
+            double[] top = maxHeap.poll();
+            int pass = (int) top[1];
+            int total = (int) top[2];
+            
+            // Add student (guaranteed pass)
+            pass++;
+            total++;
+            
+            // Recalculate gain and push back
+            double newGain = gain(pass, total);
+            maxHeap.offer(new double[]{newGain, pass, total});
+        }
+
+        // Compute final average
+        double sum = 0.0;
+        while (!maxHeap.isEmpty()) {
+            double[] cur = maxHeap.poll();
+            sum += cur[1] / cur[2];
+        }
+
+        return sum / classes.length;
+    }
+
+    // Function to compute marginal gain of adding one passing student
+    private double gain(int pass, int total) {
+        return (double) (pass + 1) / (total + 1) - (double) pass / total;
+    }
+}
